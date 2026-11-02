@@ -17,5 +17,11 @@ let package = Package(
             path: "Sources/BetterPreview",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
+        .testTarget(
+            name: "BPCoreTests",
+            dependencies: ["BPCore"],
+            path: "Tests/BPCoreTests",
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
     ]
 )
