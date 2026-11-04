@@ -75,4 +75,22 @@ final class KeyNotationTests: XCTestCase {
         XCTAssertEqual(try roundTrip("<S-j><space>o"), "J<Space>o")
         XCTAssertEqual(try roundTrip("gg"), "gg")
     }
+
+    /// Every `map` line of the built-in rc parses, and format/parse round-trips.
+    func testDefaultConfigBindingsParse() throws {
+        var checked = 0
+        for line in DefaultConfig.rc.split(separator: "\n") {
+            var words = line.split(separator: " ")
+            guard words.first == "map" else { continue }
+            words.removeFirst()
+            if words.first?.hasPrefix("[") == true { words.removeFirst() }
+            let keys = String(words[0])
+            let strokes = try KeyNotation.parse(keys)
+            let formatted = KeyNotation.format(strokes)
+            XCTAssertEqual(try KeyNotation.parse(formatted), strokes, keys)
+            XCTAssertEqual(KeyNotation.format(try KeyNotation.parse(formatted)), formatted, keys)
+            checked += 1
+        }
+        XCTAssertGreaterThan(checked, 70)
+    }
 }

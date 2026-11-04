@@ -15,7 +15,8 @@ final class InterfacesTests: XCTestCase {
         XCTAssertEqual(names.count, Set(names).count)
     }
 
-    func testThemeColorKeys() {
+    func testThemeColorKeysCoverDefaultRc() {
         XCTAssertNotNil(Theme.colorKeys["recolor-darkcolor"])
+        XCTAssertFalse(DefaultConfig.rc.isEmpty)
     }
 }

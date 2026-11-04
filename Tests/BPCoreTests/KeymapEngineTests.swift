@@ -284,4 +284,28 @@ final class KeymapEngineTests: XCTestCase {
     }
 
     // MARK: Defaults
+
+    func testDefaultBindingsSample() {
+        let bindings = DefaultConfig.rc.split(separator: "\n").compactMap { line -> KeyBinding? in
+            var w = line.split(separator: " ", maxSplits: 3).map(String.init)
+            guard w.first == "map" else { return nil }
+            w.removeFirst()
+            var mode = Mode.normal
+            if w[0].hasPrefix("[") { mode = Mode(rawValue: String(w.removeFirst().dropFirst().dropLast()))! }
+            let arg = w.count > 2 ? w[2].trimmingCharacters(in: CharacterSet(charactersIn: "\"")) : nil
+            return KeyBinding(mode: mode, keys: w[0], action: Action(ActionName(rawValue: w[1])!, arg))
+        }
+        let e = KeymapEngine(bindings: bindings)
+        XCTAssertTrue(e.invalidBindings.isEmpty)
+        XCTAssertEqual(feed(e, "5j"), [.pending, inv(.scrollDown, count: 5)])
+        XCTAssertEqual(feed(e, "gg"), [.pending, inv(.gotoFirst)])
+        XCTAssertEqual(feed(e, "<Space>"), [.pending])
+        XCTAssertTrue(e.needsTimeout)
+        XCTAssertEqual(feed(e, "o"), [inv(.openPalette)])
+        XCTAssertEqual(feed(e, "<Space>j"), [.pending, inv(.scrollPageDown), inv(.scrollDown)])
+        XCTAssertEqual(feed(e, "o"), [inv(.enterCommand, "open ")])
+        XCTAssertEqual(feed(e, "`a"), [.pending, inv(.markJump, "a")])
+        XCTAssertEqual(feed(e, "<C-S-d>"), [.unhandled])
+        XCTAssertEqual(feed(e, "<Esc>", mode: .presentation), [inv(.togglePresentation)])
+    }
 }
