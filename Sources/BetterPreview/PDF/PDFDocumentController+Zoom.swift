@@ -89,6 +89,7 @@ extension PDFDocumentController {
         applyFit(keepingPosition: false)
         pdfView.layoutDocumentView()
         restore(position, animated: false)
+        tileBackdrop.refresh()
         scheduleStatusUpdate()
     }
 

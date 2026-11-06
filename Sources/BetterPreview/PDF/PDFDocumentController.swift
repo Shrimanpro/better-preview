@@ -21,6 +21,7 @@ final class PDFDocumentController: NSObject, DocumentController {
     let pdfView = BPPDFView()
     private(set) lazy var scroller = SmoothScroller(host: pdfView)
     /// Recolours PDFKit's white paper behind unrendered tiles (recolor only).
+    private(set) lazy var tileBackdrop = TileBackdrop(pdfView: pdfView)
     let search = PDFSearch()
     /// Recolor parameters read by the pages while they draw.
     let renderState = PageRenderState()
@@ -80,6 +81,7 @@ final class PDFDocumentController: NSObject, DocumentController {
         super.init()
         documentPassword = opened.password
         changes.onChange = { [weak self] in MainActor.assumeIsolated { self?.scheduleStatusUpdate() } }
+        PDFKitTuning.applyAnalysis(AppEnvironment.shared.options.pdfkitAnalysis, to: pdfView)
         pdfView.autoScales = false
         pdfView.pageShadowsEnabled = false
         pdfView.displaysPageBreaks = true
@@ -237,6 +239,9 @@ final class PDFDocumentController: NSObject, DocumentController {
         options = new
 
         scroller.isEnabled = new.smoothScroll
+        if first || old.pdfkitAnalysis != new.pdfkitAnalysis {
+            PDFKitTuning.applyAnalysis(new.pdfkitAnalysis, to: pdfView)
+        }
         scroller.settleDuration = new.scrollDuration
         if first || old.zoomMin != new.zoomMin || old.zoomMax != new.zoomMax {
             pdfView.minScaleFactor = new.zoomMin
@@ -299,6 +304,7 @@ final class PDFDocumentController: NSObject, DocumentController {
         if let bounds = documentView?.bounds {
             scroller.set(CGPoint(x: bounds.minX, y: bounds.minY))
         }
+        tileBackdrop.refresh()
         observeScrollPosition()
         let pending = pendingNavigation
         pendingNavigation = []
@@ -329,6 +335,7 @@ final class PDFDocumentController: NSObject, DocumentController {
         restore(position, animated: false)
         rerunSearchQuietly()
         for feature in features { feature.documentDidReload() }
+        tileBackdrop.refresh()
         scheduleStatusUpdate()
     }
 

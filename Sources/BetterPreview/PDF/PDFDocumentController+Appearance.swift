@@ -11,6 +11,7 @@ extension PDFDocumentController {
     /// but only if what the pages draw actually changes.
     func updateRecolor() {
         let recolor = isRecolored ? theme.map { Recolor(theme: $0, keepHue: options.recolorKeepHue) } : nil
+        tileBackdrop.setColor(recolor?.paperColor)
         guard recolor != renderState.recolor else { return }
         renderState.recolor = recolor
         redrawPages()
