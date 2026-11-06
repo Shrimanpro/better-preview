@@ -114,7 +114,12 @@ extension DocumentWindowController {
             offerSaveAs(after: error, inPlace: url == nil)
             return false
         }
-        if inPlace { fileChangedOnDisk = false }
+        // Our own write changed the file: watch from its new state, or the
+        // watcher would reload (or complain about) what we just wrote.
+        if inPlace {
+            fileChangedOnDisk = false
+            restartFileWatcher()
+        }
         documentStatusDidChange()
         showMessage("written \((url ?? content.fileURL).path)", isError: false)
         return true

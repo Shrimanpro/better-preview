@@ -60,6 +60,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
     var searchSession: SearchSession?
 
     private var messageTimer: Timer?
+    private var fileWatcher: FileWatcher?
     private var appliedStatusbarOption: Bool?
     private var appliedFont: NSFont?
 
@@ -125,6 +126,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
             contentView.statusBarVisible = options.statusbar
         }
         if AppEnvironment.shared.config.bindings != engineBindings { discardKeyEngine() }
+        updateFileWatcher()
     }
 
     func focusDocument() {
@@ -193,6 +195,34 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
                 ? "\(status.page)/\(status.pageCount)" + (status.position.map { " (\($0)%)" } ?? "")
                 : "",
         ]
+    }
+
+    // MARK: Auto-reload
+
+    private func updateFileWatcher() {
+        guard options.autoReload else {
+            fileWatcher = nil
+            return
+        }
+        guard fileWatcher == nil else { return }
+        fileWatcher = FileWatcher(url: content.fileURL) { [weak self] in self?.fileDidChangeOnDisk() }
+    }
+
+    /// Our own save changes the file too: start watching from the new state.
+    func restartFileWatcher() {
+        fileWatcher = nil
+        updateFileWatcher()
+    }
+
+    private func fileDidChangeOnDisk() {
+        if content.isDirty {
+            fileChangedOnDisk = true
+            showMessage("\(content.fileURL.lastPathComponent) changed on disk; not reloaded (unsaved changes)",
+                        isError: true)
+        } else {
+            fileChangedOnDisk = false
+            content.reloadFromDisk()
+        }
     }
 
     // MARK: Menu
@@ -270,6 +300,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
         NotificationCenter.default.removeObserver(self)
         keyTimer?.invalidate()
         messageTimer?.invalidate()
+        fileWatcher = nil
         onClose?()
     }
 }

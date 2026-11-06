@@ -27,15 +27,17 @@ final class ConfigController {
 
     private static let sessionFile = "<session>"
     private var layers: [Layer] = []
+    private var watcher: FileWatcher?
     private var appearanceObservation: NSKeyValueObservation?
     /// A load-time problem waiting for the first window to show it.
     private var undeliveredMessage: String?
 
     private init() {}
 
-    /// Loads the config and starts watching the appearance.
+    /// Loads the config and starts watching the rc file and the appearance.
     func start() {
         reload()
+        watcher = FileWatcher(url: URL(fileURLWithPath: rcPath)) { [weak self] in self?.reload() }
         appearanceObservation = NSApp.observe(\.effectiveAppearance) { _, _ in
             Task { @MainActor in ConfigController.shared.appearanceDidChange() }
         }
