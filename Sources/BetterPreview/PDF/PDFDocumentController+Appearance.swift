@@ -2,7 +2,7 @@ import AppKit
 import BPCore
 import PDFKit
 
-/// Recolor, and the export guard that undoes all view-only
+/// Recolor, margin trimming, and the export guard that undoes all view-only
 /// changes while saving, printing or exporting.
 extension PDFDocumentController {
     // MARK: Recolor
@@ -34,17 +34,54 @@ extension PDFDocumentController {
         documentView?.subviews.forEach { $0.layer.map(invalidate) }
     }
 
+    // MARK: Trim
+
+    /// Starts or stops trimming to match `isTrimmed` and the padding option.
+    func updateTrim() {
+        trimmer.padding = max(0, options.trimPadding)
+        guard isTrimmed != trimmer.isOn else { return }
+        if isTrimmed, let document {
+            trimmer.start(document: document, priority: visiblePageIndices())
+        } else {
+            trimmer.stop()
+        }
+        scheduleStatusUpdate()
+    }
+
+    /// The visible pages and two on either side.
+    private func visiblePageIndices() -> [Int] {
+        guard let document else { return [] }
+        let visible = pdfView.visiblePages.map { document.index(for: $0) }
+        let center = visible.isEmpty ? currentPageIndex : visible[0]
+        return visible + (max(0, center - 2)...min(document.pageCount - 1, center + visible.count + 2))
+    }
+
+    /// Runs a change of page boxes (trim) keeping the reading position: same
+    /// page, same spot in it, sticky fit re-applied.
+    func relayoutKeepingPosition(_ change: () -> Void) {
+        let position = currentPosition
+        scroller.stop()
+        change()
+        pdfView.layoutDocumentView()
+        applyFit(keepingPosition: false)
+        pdfView.layoutDocumentView()
+        restore(position, animated: false)
+        scheduleStatusUpdate()
+    }
+
     // MARK: Positions
 
-    /// The box positions (marks, jump list, search order) are expressed in.
+    /// The box positions (marks, jump list, outline, search order) are
+    /// expressed in: the page's untrimmed crop box, so they mean the same
+    /// spot with trim on or off.
     func referenceBox(of page: PDFPage) -> CGRect {
-        page.bounds(for: pdfView.displayBox)
+        trimmer.originalBox(of: page) ?? page.bounds(for: pdfView.displayBox)
     }
 
     // MARK: Export guard
 
     /// Runs `body` with the document exactly as it is in the file: no view
-    /// rotation, no recolor. Use around every save,
+    /// rotation, untrimmed crop boxes, no recolor. Use around every save,
     /// export and print, since all of them share the pages the view shows.
     func withPristinePages<T>(_ body: () throws -> T) rethrows -> T {
         let rotation = viewRotation
@@ -57,6 +94,6 @@ extension PDFDocumentController {
             // Tiles PDFView rendered meanwhile on its threads are not recolored.
             if renderState.recolor != nil { redrawPages() }
         }
-        return try body()
+        return try trimmer.withOriginalBoxes(body)
     }
 }

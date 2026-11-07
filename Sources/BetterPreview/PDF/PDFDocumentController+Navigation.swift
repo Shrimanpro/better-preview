@@ -222,7 +222,14 @@ extension PDFDocumentController {
         }
         guard let documentView else { return }
         let box = referenceBox(of: page)
-        let pagePoint = CGPoint(x: box.minX + position.x * box.width, y: box.maxY - position.y * box.height)
+        var pagePoint = CGPoint(x: box.minX + position.x * box.width, y: box.maxY - position.y * box.height)
+        if trimmer.isOn {
+            // A spot in a trimmed-away margin: the nearest visible edge, so
+            // the same page stays at the top of the viewport.
+            let shown = page.bounds(for: pdfView.displayBox)
+            let gap = pdfView.pageBreakMargins
+            pagePoint.y = min(max(pagePoint.y, shown.minY - gap.bottom), shown.maxY + gap.top)
+        }
         let origin = documentView.convert(pdfView.convert(pagePoint, from: page), from: pdfView)
         if animated { scroller.jump(to: origin) } else { scroller.set(origin) }
     }

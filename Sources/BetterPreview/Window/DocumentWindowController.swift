@@ -51,7 +51,6 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
     var jumpList = JumpList()
     /// Where the last jump started, for `''`.
     var lastJumpOrigin: DocumentPosition?
-    /// Moves marks and jumps with their pages after page edits.
 
     // Keys (see +Keys).
     var engineStorage: KeymapEngine?

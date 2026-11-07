@@ -79,6 +79,7 @@ enum MainMenu {
         view.addItem(ActionMenuItem("Continuous Scroll", .toggleContinuous, key: "1"))
         view.addItem(ActionMenuItem("Two Pages", .toggleDualPage, key: "2"))
         view.addItem(ActionMenuItem("Recolor Pages", .toggleRecolor))
+        view.addItem(ActionMenuItem("Trim Margins", .toggleTrim))
         view.addItem(.separator())
         view.addItem(ActionMenuItem("Enter Full Screen", .toggleFullscreen, key: "f", modifiers: [.command, .control]))
         add(view, titled: "View", to: main)

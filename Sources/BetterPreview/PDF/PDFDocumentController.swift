@@ -3,7 +3,7 @@ import BPCore
 import PDFKit
 
 /// The PDF viewer: a PDFView plus vim-style navigation, smooth scrolling,
-/// sticky fit modes, search and recolor. Feature areas live
+/// sticky fit modes, search, recolor and margin trimming. Feature areas live
 /// in extensions: `+Navigation`, `+Zoom`, `+Search`, `+Appearance`, `+Outline`.
 @MainActor
 final class PDFDocumentController: NSObject, DocumentController {
@@ -25,8 +25,11 @@ final class PDFDocumentController: NSObject, DocumentController {
     let search = PDFSearch()
     /// Recolor parameters read by the pages while they draw.
     let renderState = PageRenderState()
+    let trimmer = MarginTrimmer()
     /// The password the file was opened with (encrypted PDFs); saving keeps it.
     var documentPassword: String?
+    /// Flattened outline, built on first use; reset on reload.
+    var cachedOutline: [OutlineEntry]?
     /// Direction of the last `/` or `?`; `n` follows it, `N` reverses it.
     /// Set by the window layer when it opens the search bar.
     var searchDirectionBackward = false
@@ -41,6 +44,7 @@ final class PDFDocumentController: NSObject, DocumentController {
     var isContinuous = true
     var isDual = false
     var isRecolored = false
+    var isTrimmed = false
     /// View-only rotation added to every page, in degrees (0, 90, 180, 270).
     /// Removed again while saving so it never reaches the file.
     var viewRotation = 0
@@ -94,6 +98,10 @@ final class PDFDocumentController: NSObject, DocumentController {
             self?.features.contains { $0.handleMouse(event) } ?? false
         }
         search.controller = self
+        trimmer.performCropChange = { [weak self] change in
+            guard let self else { return change() }
+            relayoutKeepingPosition(change)
+        }
 
         let center = NotificationCenter.default
         center.addObserver(self, selector: #selector(pageChanged),
@@ -119,6 +127,7 @@ final class PDFDocumentController: NSObject, DocumentController {
         if isDual { s.flags.append("dual") }
         if !isContinuous { s.flags.append("single") }
         if isRecolored { s.flags.append("recolor") }
+        if isTrimmed { s.flags.append("trim") }
         for feature in features { s.flags += feature.statusFlags }
         s.detail = search.statusDetail
         return s
@@ -216,6 +225,9 @@ final class PDFDocumentController: NSObject, DocumentController {
         case .toggleRecolor:
             isRecolored.toggle()
             updateRecolor()
+        case .toggleTrim:
+            isTrimmed.toggle()
+            updateTrim()
 
         case .searchRun: runSearch(argument ?? "")
         case .searchNext: stepSearch(by: n, reverse: false)
@@ -259,6 +271,7 @@ final class PDFDocumentController: NSObject, DocumentController {
             layoutChanged = true
         }
         if first || old.recolor != new.recolor { isRecolored = new.recolor }
+        if first || old.trimMargins != new.trimMargins { isTrimmed = new.trimMargins }
         if old.dualPageBook != new.dualPageBook { layoutChanged = true }
         if old.pagePadding != new.pagePadding {
             applyPagePadding()
@@ -279,8 +292,9 @@ final class PDFDocumentController: NSObject, DocumentController {
             pdfView.backgroundColor = newTheme.defaultBg.nsColor
             if colorsChanged { refreshSearchHighlights(force: true) }
         }
-        // A no-op unless something it depends on changed.
+        // Both are no-ops unless something they depend on changed.
         updateRecolor()
+        updateTrim()
     }
 
     private func applyPagePadding() {
@@ -324,6 +338,8 @@ final class PDFDocumentController: NSObject, DocumentController {
         let scale = pdfView.scaleFactor
         scroller.stop()
         search.cancel()
+        trimmer.reset()
+        cachedOutline = nil
         if viewRotation != 0 { Self.rotate(fresh, by: viewRotation) }
         changes.resetChanges()
         pdfView.document = fresh
@@ -336,6 +352,7 @@ final class PDFDocumentController: NSObject, DocumentController {
         pdfView.layoutDocumentView()
         restore(position, animated: false)
         rerunSearchQuietly()
+        updateTrim()
         for feature in features { feature.documentDidReload() }
         tileBackdrop.refresh()
         scheduleStatusUpdate()
