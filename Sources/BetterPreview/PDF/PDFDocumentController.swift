@@ -225,6 +225,8 @@ final class PDFDocumentController: NSObject, DocumentController {
         case .copy: pdfView.copy(nil)
         case .selectAll: pdfView.selectAll(nil)
         case .reload: reloadFromDisk()
+        // M2: marks and the jump list (window layer) use currentPosition/go(to:).
+        case .markSet, .markJump, .jumpBack, .jumpForward: return false
         default: return features.contains { $0.handle(invocation) }
         }
         return true

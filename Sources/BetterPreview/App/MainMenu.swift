@@ -92,6 +92,8 @@ enum MainMenu {
         go.addItem(ActionMenuItem("Last Page", .gotoLast, key: String(UnicodeScalar(NSEndFunctionKey)!), modifiers: []))
         go.addItem(ActionMenuItem("Go to Page…", .enterCommand, "goto-page ", key: "g", modifiers: [.command, .option]))
         go.addItem(.separator())
+        go.addItem(ActionMenuItem("Back", .jumpBack, key: "[", modifiers: [.command]))
+        go.addItem(ActionMenuItem("Forward", .jumpForward, key: "]", modifiers: [.command]))
         go.addItem(.separator())
         go.addItem(ActionMenuItem("Command Line…", .enterCommand, key: ";", modifiers: [.command, .shift]))
         add(go, titled: "Go", to: main)

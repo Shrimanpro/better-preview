@@ -36,6 +36,11 @@ extension DocumentWindowController {
         case .toggleSidebar, .toggleToolbar:
             showMessage("\(invocation.action.name.rawValue): not implemented yet", isError: true)
 
+        // Marks and jumps
+        case .markSet: setMark(argument)
+        case .markJump: jumpToMark(argument)
+        case .jumpBack: jump(count: count) { $0.back(from: $1) }
+        case .jumpForward: jump(count: count) { list, _ in list.forward() }
 
         // Editing
         case .undo: undo(redo: false)
@@ -95,6 +100,33 @@ extension DocumentWindowController {
         } catch {
             showMessage(error.localizedDescription, isError: true)
         }
+    }
+
+    // MARK: Marks and jumps
+
+    private func setMark(_ name: String?) {
+        guard let c = name?.first, marks.set(c, content.currentPosition) else {
+            return showMessage("Invalid mark name", isError: true)
+        }
+    }
+
+    /// `'x` jumps to mark x; `''` returns to where the last jump started.
+    private func jumpToMark(_ name: String?) {
+        guard let c = name?.first else { return }
+        let target = c == "'" || c == "`" ? lastJumpOrigin : marks.get(c)
+        guard let target else { return showMessage("Mark \(c) not set", isError: true) }
+        recordJump(from: content.currentPosition)
+        content.go(to: target, animated: true)
+    }
+
+    private func jump(count: Int, _ step: (inout JumpList, DocumentPosition) -> DocumentPosition?) {
+        let current = content.currentPosition
+        var target: DocumentPosition?
+        for _ in 0..<count {
+            guard let next = step(&jumpList, current) else { break }
+            target = next
+        }
+        if let target { content.go(to: target, animated: true) }
     }
 
     private func undo(redo: Bool) {

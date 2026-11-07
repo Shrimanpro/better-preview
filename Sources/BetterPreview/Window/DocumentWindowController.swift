@@ -23,7 +23,7 @@ extension WindowFeature {
 }
 
 /// One window showing one document: the document view, the status bar, the
-/// input bar and key routing. Actions are dispatched in
+/// input bar, key routing, marks and the jump list. Actions are dispatched in
 /// `ActionDispatch.swift`, keys are handled in `+Keys`, the input bar in
 /// `+CommandBar`.
 @MainActor
@@ -47,8 +47,11 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
     var theme: Theme { AppEnvironment.shared.theme }
 
     let contentView: DocumentContentView
+    var marks = Marks()
+    var jumpList = JumpList()
     /// Where the last jump started, for `''`.
     var lastJumpOrigin: DocumentPosition?
+    /// Moves marks and jumps with their pages after page edits.
 
     // Keys (see +Keys).
     var engineStorage: KeymapEngine?
@@ -175,6 +178,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
         // Incremental search moves around while typing; the input bar records
         // the starting point once when the search is confirmed.
         guard searchSession == nil else { return }
+        jumpList.record(position)
         lastJumpOrigin = position
     }
 
