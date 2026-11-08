@@ -50,6 +50,7 @@ final class BPDocument: PDFDocument {
 /// highlight and markup colors survive.
 final class RecolorPage: PDFPage {
     override func draw(with box: PDFDisplayBox, to context: CGContext) {
+        defer { if LaunchTiming.isEnabled { LaunchTiming.mark("first-page-drawn") } }
         guard let recolor = (document as? BPDocument)?.renderState.activeRecolor else {
             super.draw(with: box, to: context)
             return

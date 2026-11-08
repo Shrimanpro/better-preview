@@ -13,12 +13,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        LaunchTiming.mark("finished-launching")
         // Files given on the command line: `BetterPreview a.pdf b.png`.
         let args = CommandLine.arguments.dropFirst().filter { !$0.hasPrefix("-") }
         for path in args {
             open(URL(fileURLWithPath: (path as NSString).expandingTildeInPath))
         }
         NSApp.activate()
+        DebugScript.runIfRequested { [weak self] in self?.windows.first }
         // Launched with nothing to show: offer the Open panel, like Preview.
         DispatchQueue.main.async { [self] in
             if !openedAnything { showOpenPanel() }
@@ -74,6 +76,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         windows.append(controller)
         controller.showWindow(nil)
+        LaunchTiming.mark("window-shown")
         NSDocumentController.shared.noteNewRecentDocumentURL(url)
         return controller
     }

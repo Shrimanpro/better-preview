@@ -3,7 +3,7 @@ import BPCore
 
 /// Key routing. Every key-down of the window arrives in `handleKeyEvent`
 /// (via `DocumentWindow`) and is converted to a `KeyStroke`; `handleKey` is
-/// the single entry point after conversion.
+/// the single entry point after conversion, also used by `DebugScript`.
 ///
 /// What is intercepted:
 /// - command mode: the input bar's special keys (Return, Esc, Tab, history,

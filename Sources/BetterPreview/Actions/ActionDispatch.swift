@@ -1,7 +1,7 @@
 import AppKit
 import BPCore
 
-/// The single dispatch path for keys, the input bar and menus:
+/// The single dispatch path for keys, the input bar, menus and DebugScript:
 /// window features first, then window-level actions, then the document.
 extension DocumentWindowController {
     func dispatch(_ invocation: ActionInvocation) {

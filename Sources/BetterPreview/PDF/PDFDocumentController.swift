@@ -76,6 +76,7 @@ final class PDFDocumentController: NSObject, DocumentController {
     private var lastReportedDirty = false
 
     init?(url: URL) {
+        PDFSelfTest.runIfRequested()
         guard let opened = BPDocument.openUnlocking(url: url, renderState: renderState),
               opened.document.pageCount > 0 else {
             return nil
@@ -315,6 +316,7 @@ final class PDFDocumentController: NSObject, DocumentController {
     /// First real size: fit and show the top of the first page.
     private func initialLayout() {
         hasInitialLayout = true
+        LaunchTiming.mark("first-layout")
         applyFit(keepingPosition: false)
         pdfView.layoutDocumentView()
         if let bounds = documentView?.bounds {
