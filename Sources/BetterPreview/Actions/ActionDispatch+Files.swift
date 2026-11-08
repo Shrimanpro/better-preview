@@ -21,6 +21,19 @@ extension DocumentWindowController {
         appDelegate?.open(resolvePath(path))
     }
 
+    func openPalette() {
+        guard let window else { return }
+        Palette.present(
+            over: window, theme: theme, options: options,
+            directory: content.fileURL.deletingLastPathComponent(), outline: content.outline,
+            onOpen: { [weak self] url in self?.appDelegate?.open(url) },
+            onJump: { [weak self] entry in
+                guard let self else { return }
+                recordJump(from: content.currentPosition)
+                content.go(to: entry.position, animated: true)
+            })
+    }
+
     func reload() {
         guard !content.isDirty else {
             return showMessage("reload: unsaved changes; save or close first", isError: true)

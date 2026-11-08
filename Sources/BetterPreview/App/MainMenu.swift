@@ -35,6 +35,7 @@ enum MainMenu {
 
         let file = NSMenu(title: "File")
         file.addItem(withTitle: "Open…", action: #selector(AppDelegate.showOpenPanel as (AppDelegate) -> () -> Void), keyEquivalent: "o")
+        file.addItem(ActionMenuItem("Open Quickly…", .openPalette, key: "o", modifiers: [.command, .shift]))
         file.addItem(.separator())
         file.addItem(withTitle: "Close", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         file.addItem(ActionMenuItem("Save", .save, key: "s"))

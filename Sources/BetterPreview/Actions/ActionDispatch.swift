@@ -24,6 +24,7 @@ extension DocumentWindowController {
 
         // Files (ActionDispatch+Files)
         case .open: open(argument)
+        case .openPalette: openPalette()
         case .reload: reload()
         case .close: window?.performClose(nil)
         case .quit: NSApp.terminate(nil)
