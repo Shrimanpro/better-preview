@@ -91,6 +91,6 @@ final class KeyNotationTests: XCTestCase {
             XCTAssertEqual(KeyNotation.format(try KeyNotation.parse(formatted)), formatted, keys)
             checked += 1
         }
-        XCTAssertGreaterThan(checked, 70)
+        XCTAssertGreaterThan(checked, 80)
     }
 }

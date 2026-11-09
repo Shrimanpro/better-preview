@@ -133,6 +133,11 @@ public enum DefaultConfig {
     map ZZ close
     map ZQ quit
 
+    map gh annotate-highlight
+    map gu annotate-underline
+    map gs annotate-strikethrough
+    map x annotation-delete
+
     # ---- Presentation mode ----
     map [presentation] j page-next
     map [presentation] k page-previous
