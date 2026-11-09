@@ -51,6 +51,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
     var jumpList = JumpList()
     /// Where the last jump started, for `''`.
     var lastJumpOrigin: DocumentPosition?
+    /// Moves marks and jumps with their pages after page edits.
+    private var pageMarkTracker: PageMarkTracker?
 
     // Keys (see +Keys).
     var engineStorage: KeymapEngine?
@@ -94,7 +96,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
         window.keyRouter = { [unowned self] event in handleKeyEvent(event) }
 
         document.host = self
-        features = []
+        pageMarkTracker = PageMarkTracker(window: self)
+        features = [SidebarFeature(window: self)]
         applyEnvironment()
         refreshStatus()
         window.makeFirstResponder(document.preferredFirstResponder)

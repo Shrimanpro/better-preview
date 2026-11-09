@@ -43,4 +43,15 @@ extension PDFDocumentController {
         for feature in features { feature.tearDown() }
     }
 
+    /// Key in `pagesDidChange`'s userInfo: `[(old: PDFPage, new: PDFPage)]`
+    /// for pages replaced in place (same index, new object).
+    static let replacedPagesKey = "replacedPages"
+
+    /// Pages were replaced in place (OCR, and undoing it): posts
+    /// `PagesFeature.pagesDidChange` with the pairs, so marks and jumps
+    /// stay on them.
+    func didReplacePages(_ pairs: [(old: PDFPage, new: PDFPage)]) {
+        NotificationCenter.default.post(name: PagesFeature.pagesDidChange, object: self,
+                                        userInfo: [Self.replacedPagesKey: pairs])
+    }
 }
