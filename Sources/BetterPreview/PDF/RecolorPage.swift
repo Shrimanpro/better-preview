@@ -107,9 +107,11 @@ final class RecolorPage: PDFPage {
     }
 
     /// Markup whose ink nearly matches dark recolor paper. Highlights are
-    /// translucent washes and stay as they are; everything else is judged by its ink colour (the text
+    /// translucent washes and stay as they are; signatures are assumed to be
+    /// dark ink; everything else is judged by its ink colour (the text
     /// colour of text boxes, the stroke colour of the rest).
     private static func isLowContrast(_ annotation: PDFAnnotation, on recolor: Recolor) -> Bool {
+        if annotation is SignatureAnnotation { return true }
         let ink: NSColor?
         switch subtype(annotation) {
         case "Highlight": return false

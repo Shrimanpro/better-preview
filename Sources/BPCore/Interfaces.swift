@@ -138,6 +138,10 @@ public enum ActionName: String, CaseIterable, Sendable {
     case toolInk = "tool-ink"
     case annotationDelete = "annotation-delete"
 
+    // Forms and signatures
+    case signaturePlace = "signature-place"
+    case signatureManage = "signature-manage"
+
     // Page management (PDF). Operate on the sidebar selection, else the
     // current page.
     case pageDelete = "page-delete"
