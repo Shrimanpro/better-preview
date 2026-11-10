@@ -47,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: Opening
 
-    static let openableTypes: [UTType] = [.pdf]
+    static let openableTypes: [UTType] = [.pdf, .image]
 
     @discardableResult
     func open(_ url: URL) -> DocumentWindowController? {
@@ -62,7 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if PasswordPrompt.takeCancellation() { return nil }
             let alert = NSAlert()
             alert.messageText = "Cannot open “\(url.lastPathComponent)”"
-            alert.informativeText = "The file is missing or is not a PDF."
+            alert.informativeText = "The file is missing or is not a PDF or image."
             alert.runModal()
             return nil
         }

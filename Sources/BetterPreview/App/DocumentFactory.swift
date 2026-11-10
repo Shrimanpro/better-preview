@@ -6,7 +6,10 @@ import UniformTypeIdentifiers
 enum DocumentFactory {
     static func make(for url: URL) -> DocumentController? {
         let type = UTType(filenameExtension: url.pathExtension)
-        guard type?.conforms(to: .pdf) == true else { return nil }
-        return PDFDocumentController(url: url)
+        if type?.conforms(to: .pdf) == true {
+            return PDFDocumentController(url: url)
+        }
+        // Known image types and, for unknown extensions, whatever ImageIO sniffs.
+        return ImageDocumentController(url: url)
     }
 }

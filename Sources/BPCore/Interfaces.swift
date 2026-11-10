@@ -154,6 +154,14 @@ public enum ActionName: String, CaseIterable, Sendable {
     /// Argument: "<from>-<to> [path]".
     case pageExport = "page-export"
 
+    // Image editing
+    case imageCrop = "image-crop"
+    /// Argument: "<width>x<height>" in pixels. No argument: show the sheet.
+    case imageResize = "image-resize"
+    case imageAdjust = "image-adjust"
+    case imageFlipHorizontal = "image-flip-horizontal"
+    case imageFlipVertical = "image-flip-vertical"
+
     /// Actions that consume the next typed character as their argument.
     public var awaitsCharacter: Bool {
         self == .markSet || self == .markJump

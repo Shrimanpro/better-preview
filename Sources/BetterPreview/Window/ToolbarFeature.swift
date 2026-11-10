@@ -37,13 +37,27 @@ final class ToolbarFeature: NSObject, WindowFeature, NSToolbarDelegate, NSSharin
         Item(id: "bp.shapes", label: "Rectangle", symbol: "rectangle", name: .toolRectangle),
         Item(id: "bp.ink", label: "Draw", symbol: "pencil.tip", name: .toolInk),
         Item(id: "bp.sign", label: "Sign", symbol: "signature", name: .signaturePlace),
+        Item(id: "bp.crop", label: "Crop", symbol: "crop", name: .imageCrop),
+        Item(id: "bp.resize", label: "Resize", symbol: "arrow.up.left.and.arrow.down.right", name: .imageResize),
+        Item(id: "bp.adjust", label: "Adjust", symbol: "slider.horizontal.3", name: .imageAdjust),
+        Item(id: "bp.flip", label: "Flip", symbol: "arrow.left.and.right.righttriangle.left.righttriangle.right",
+             name: .imageFlipHorizontal),
+        Item(id: "bp.rotateRight", label: "Rotate Right", symbol: "rotate.right", name: .rotateCW),
         Item(id: "bp.undo", label: "Undo", symbol: "arrow.uturn.backward", name: .undo),
         search,
     ].map { ($0.id, $0) })
 
+    private var isImage: Bool { window.content is ImageDocumentController }
+
     private var identifiers: [NSToolbarItem.Identifier] {
-        let ids = [Self.sidebar, "bp.zoomOut", "bp.zoomIn", "bp.rotate", "bp.highlight", "bp.note", "bp.text",
+        let ids: [String]
+        if isImage {
+            ids = ["bp.zoomOut", "bp.zoomIn", "bp.fit", "bp.rotate", "bp.rotateRight", "bp.flip", "bp.crop", "bp.resize",
+                   "bp.adjust", "bp.undo", Self.share]
+        } else {
+            ids = [Self.sidebar, "bp.zoomOut", "bp.zoomIn", "bp.rotate", "bp.highlight", "bp.note", "bp.text",
                    "bp.shapes", "bp.ink", "bp.sign", Self.share, "bp.search"]
+        }
         var result = ids.map { NSToolbarItem.Identifier($0) }
         if let i = result.firstIndex(of: .init(Self.share)) { result.insert(.flexibleSpace, at: i) }
         return result

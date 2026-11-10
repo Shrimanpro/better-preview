@@ -21,7 +21,7 @@ struct DocumentStatus: Equatable {
 }
 
 /// One open document (a PDF or an image). Lives inside a window.
-/// Implementations: `PDFDocumentController`.
+/// Implementations: `PDFDocumentController`, `ImageDocumentController`.
 @MainActor
 protocol DocumentController: AnyObject {
     var fileURL: URL { get }
