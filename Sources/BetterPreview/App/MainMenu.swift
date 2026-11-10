@@ -77,6 +77,7 @@ enum MainMenu {
 
         let view = NSMenu(title: "View")
         view.addItem(ActionMenuItem("Show Sidebar", .toggleSidebar, key: "s", modifiers: [.command, .control]))
+        view.addItem(ActionMenuItem("Show Toolbar", .toggleToolbar, key: "t", modifiers: [.command, .option]))
         view.addItem(ActionMenuItem("Show Status Bar", .toggleStatusbar, key: "/"))
         view.addItem(ActionMenuItem("Show Inspector", .toggleInspector, key: "i", modifiers: [.command, .option]))
         view.addItem(.separator())
@@ -91,6 +92,7 @@ enum MainMenu {
         view.addItem(ActionMenuItem("Recolor Pages", .toggleRecolor))
         view.addItem(ActionMenuItem("Trim Margins", .toggleTrim))
         view.addItem(.separator())
+        view.addItem(ActionMenuItem("Presentation", .togglePresentation, key: "f", modifiers: [.command, .shift]))
         view.addItem(ActionMenuItem("Enter Full Screen", .toggleFullscreen, key: "f", modifiers: [.command, .control]))
         add(view, titled: "View", to: main)
 

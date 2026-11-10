@@ -97,7 +97,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, Docu
 
         document.host = self
         pageMarkTracker = PageMarkTracker(window: self)
-        features = [SidebarFeature(window: self)]
+        features = [SidebarFeature(window: self), ToolbarFeature(window: self), PresentationFeature(window: self)]
         applyEnvironment()
         refreshStatus()
         window.makeFirstResponder(document.preferredFirstResponder)
