@@ -79,6 +79,7 @@ final class PDFDocumentController: NSObject, DocumentController {
 
     init?(url: URL) {
         PDFSelfTest.runIfRequested()
+        ExportSelfTest.runIfRequested()
         guard let opened = BPDocument.openUnlocking(url: url, renderState: renderState),
               opened.document.pageCount > 0 else {
             return nil
@@ -239,6 +240,8 @@ final class PDFDocumentController: NSObject, DocumentController {
 
         case .copy: pdfView.copy(nil)
         case .selectAll: pdfView.selectAll(nil)
+        case .print: printDocument()
+        case .export: export(argument)
         case .reload: reloadFromDisk()
         // M2: marks and the jump list (window layer) use currentPosition/go(to:).
         case .markSet, .markJump, .jumpBack, .jumpForward: return false
