@@ -70,6 +70,7 @@ final class PDFDocumentController: NSObject, DocumentController {
     /// Editing features, each living in its own directory.
     private(set) lazy var features: [PDFFeature] = [
         MarkupFeature(controller: self), PagesFeature(controller: self), FormsFeature(controller: self),
+        OCRFeature(controller: self),
     ]
 
     private var statusUpdateScheduled = false

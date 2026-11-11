@@ -303,6 +303,49 @@ enum MarkupSelfTest {
                 let saved = PDFDocument(url: url)?.page(at: 0)?.annotations.first { $0.type == "FreeText" && $0.contents == "Saved mid-edit" }
                 check(saved != nil && saved?.shouldDisplay == true, "the saved text box is visible (not Hidden)")
             }
+            // OCR replaces a page object in place: undo of a markup edit on
+            // it and marks on it follow the new page (L3, L4).
+            var replacement: (old: PDFPage, new: PDFPage, box: PDFAnnotation)?
+            add { [self] in
+                guard let document = controller.document, document.pageCount > 1, let second = document.page(at: 1) else {
+                    return check(false, "a second page")
+                }
+                let box = MarkupFactory.shape(.rectangle, rect: CGRect(x: 50, y: 50, width: 100, height: 70),
+                                              style: feature.style)
+                feature.insert([(box, second)], name: "Rectangle")
+                _ = (controller.host as? DocumentWindowController)?.marks.set("z", DocumentPosition(page: 1))
+                replacement = (second, second, box)
+            }
+            add { [self] in
+                guard let r = replacement else { return }
+                feature.remove([(r.box, r.old)], name: "Delete Annotation")
+                check(r.box.page == nil, "rectangle on page 2 deleted")
+            }
+            addUndo { [self] in
+                guard let r = replacement, let document = controller.document,
+                      let ocr = controller.features.compactMap({ $0 as? OCRFeature }).first else { return }
+                // The swap OCR makes with its recognized page.
+                let fresh = PDFPage()
+                fresh.setBounds(r.old.bounds(for: .mediaBox), for: .mediaBox)
+                ocr.swapPages([(r.old, fresh)])
+                replacement = (r.old, fresh, r.box)
+                check(document.page(at: 1) === fresh && undo.undoActionName == "Recognize Text",
+                      "OCR page swap is one undo step")
+                let mark = (controller.host as? DocumentWindowController)?.marks.get("z")
+                check(mark?.page == 1, "a mark on a replaced page stays on it (page \((mark?.page ?? -1) + 1))")
+            }
+            addUndo { [self] in
+                guard let r = replacement, let document = controller.document else { return }
+                undo.undo()
+                check(document.page(at: 1) === r.old, "undo of the OCR swap puts the original page back")
+                undo.undo()
+                check(r.box.page === r.old && document.page(at: 1) === r.old,
+                      "then undo of the delete puts the rectangle back on a page in the document")
+                undo.redo()
+                undo.redo()
+                check(document.page(at: 1) === r.new && r.box.page == nil, "redo redoes the delete and the swap")
+                check((controller.host as? DocumentWindowController)?.marks.get("z")?.page == 1, "the mark is still on page 2")
+            }
             add { [self] in
                 action(.toolRectangle)
                 _ = controller.perform(ActionInvocation(.abort))

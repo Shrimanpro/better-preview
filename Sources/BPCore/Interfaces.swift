@@ -162,6 +162,9 @@ public enum ActionName: String, CaseIterable, Sendable {
     case imageFlipHorizontal = "image-flip-horizontal"
     case imageFlipVertical = "image-flip-vertical"
 
+    // Extras
+    case ocr = "ocr"
+
     /// Actions that consume the next typed character as their argument.
     public var awaitsCharacter: Bool {
         self == .markSet || self == .markJump

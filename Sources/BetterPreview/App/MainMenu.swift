@@ -150,6 +150,7 @@ enum MainMenu {
         image.addItem(ActionMenuItem("Flip Vertical", .imageFlipVertical))
         addSubmenu(image, titled: "Image", to: tools)
         tools.addItem(.separator())
+        tools.addItem(ActionMenuItem("Recognize Text (OCR)", .ocr))
         tools.addItem(ActionMenuItem("Manage Signatures…", .signatureManage))
         add(tools, titled: "Tools", to: main)
 
