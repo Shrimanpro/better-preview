@@ -43,6 +43,12 @@ extension PDFDocumentController {
 
     // MARK: Scrolling
 
+    /// True when the document is wider than the visible area.
+    var canScrollHorizontally: Bool {
+        guard let viewport = scroller.viewport, let bounds = documentView?.bounds else { return false }
+        return bounds.width - viewport.width > 0.5
+    }
+
     /// Vertical scroll position as 0–100, nil when the document fits.
     var scrollPercentage: Int? {
         guard let viewport = scroller.viewport, let bounds = documentView?.bounds else { return nil }

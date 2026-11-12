@@ -197,8 +197,14 @@ final class PDFDocumentController: NSObject, DocumentController {
         switch invocation.action.name {
         case .scrollDown: scroll(viewDX: 0, viewDY: options.scrollStep * Double(n))
         case .scrollUp: scroll(viewDX: 0, viewDY: -options.scrollStep * Double(n))
-        case .scrollRight: scroll(viewDX: options.scrollHStep * Double(n), viewDY: 0)
-        case .scrollLeft: scroll(viewDX: -options.scrollHStep * Double(n), viewDY: 0)
+        // h/l scroll sideways when the page is wider than the window, and
+        // otherwise turn the page (user decision).
+        case .scrollRight:
+            if canScrollHorizontally { scroll(viewDX: options.scrollHStep * Double(n), viewDY: 0) }
+            else { goToAdjacentPage(by: n) }
+        case .scrollLeft:
+            if canScrollHorizontally { scroll(viewDX: -options.scrollHStep * Double(n), viewDY: 0) }
+            else { goToAdjacentPage(by: -n) }
         case .scrollHalfDown: scroll(screens: 0.5 * Double(n))
         case .scrollHalfUp: scroll(screens: -0.5 * Double(n))
         case .scrollPageDown: scroll(screens: (1 - options.scrollPageOverlap) * Double(n))
