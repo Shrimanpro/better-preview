@@ -11,9 +11,18 @@ let package = Package(
             path: "Sources/BPCore",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
+        // Vendored SyncTeX parser (MIT, github.com/jlaurens/synctex). Reads
+        // .synctex(.gz) files; links the system zlib.
+        .target(
+            name: "CSyncTeX",
+            path: "Sources/CSyncTeX",
+            exclude: ["LICENSE"],
+            cSettings: [.headerSearchPath(".")],
+            linkerSettings: [.linkedLibrary("z")]
+        ),
         .executableTarget(
             name: "BetterPreview",
-            dependencies: ["BPCore"],
+            dependencies: ["BPCore", "CSyncTeX"],
             path: "Sources/BetterPreview",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),

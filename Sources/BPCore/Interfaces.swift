@@ -164,6 +164,9 @@ public enum ActionName: String, CaseIterable, Sendable {
 
     // Extras
     case ocr = "ocr"
+    /// SyncTeX forward search. Argument: `<line>[:<column>] [source]`;
+    /// source defaults to `<pdf name>.tex`, relative paths resolve next to the PDF.
+    case synctexForward = "synctex-forward"
 
     /// Actions that consume the next typed character as their argument.
     public var awaitsCharacter: Bool {

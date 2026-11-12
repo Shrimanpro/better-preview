@@ -10,6 +10,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.mainMenu = MainMenu.build()
         ConfigController.shared.start()
+        NSAppleEventManager.shared().setEventHandler(
+            self, andSelector: #selector(handleURLEvent(_:reply:)),
+            forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -142,6 +145,100 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.begin { [weak self] response in
             guard response == .OK else { return }
             for url in panel.urls { self?.open(url) }
+        }
+    }
+
+    // MARK: URL scheme (better-preview://forward?line=&src=&pdf=)
+
+    @objc private func handleURLEvent(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
+        guard let string = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue,
+              let url = URL(string: string) else { return }
+        URLSchemeHandler.handle(url, app: self)
+    }
+}
+
+/// Entry point for `better-preview://` URLs.
+///
+/// `better-preview://forward?pdf=<path>&src=<path>&line=<n>[&column=<n>]`
+/// opens the PDF (or brings its window forward) and, when `line` is given,
+/// runs a SyncTeX forward search. `pdf` and `src` may be paths or `file://`
+/// URLs; a relative `src` is taken relative to the PDF's directory.
+@MainActor
+enum URLSchemeHandler {
+    struct ForwardRequest: Equatable {
+        var pdf: URL
+        var source: String?
+        var line: Int?
+        var column: Int
+    }
+
+    static func parse(_ url: URL) -> ForwardRequest? {
+        guard url.scheme?.lowercased() == "better-preview",
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+        let action = (components.host ?? components.path).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard action.isEmpty || action.lowercased() == "forward" else { return nil }
+        var values: [String: String] = [:]
+        for item in components.queryItems ?? [] {
+            if let value = item.value, !value.isEmpty { values[item.name.lowercased()] = value }
+        }
+        guard let pdf = values["pdf"].map(fileURL(from:)) else { return nil }
+        // Lines are 1-based; anything else (0, negative, not a number) just
+        // opens the PDF. Huge values are clamped by the SyncTeX query.
+        let line = values["line"].flatMap { Int($0.trimmingCharacters(in: .whitespaces)) }.flatMap { $0 >= 1 ? $0 : nil }
+        let column = max(0, values["column"].flatMap { Int($0.trimmingCharacters(in: .whitespaces)) } ?? 0)
+        let source = values["src"].map { value -> String in
+            value.lowercased().hasPrefix("file:") ? (URL(string: value)?.path ?? value) : value
+        }
+        return ForwardRequest(pdf: pdf, source: source, line: line, column: column)
+    }
+
+    private static func fileURL(from value: String) -> URL {
+        if value.lowercased().hasPrefix("file:"), let url = URL(string: value), url.isFileURL { return url }
+        return URL(fileURLWithPath: (value as NSString).expandingTildeInPath)
+    }
+
+    /// `completion` gets the boxes the forward search found (empty when
+    /// there was no search or no match).
+    static func handle(_ url: URL, app: AppDelegate,
+                       completion: (@MainActor ([SyncTeXBox]) -> Void)? = nil) {
+        guard let request = parse(url) else {
+            completion?([])
+            return
+        }
+        NSApp.activate()
+        guard let window = app.open(request.pdf) else {
+            completion?([])
+            return
+        }
+        window.window?.makeKeyAndOrderFront(nil)
+        guard let line = request.line, let pdf = window.content as? PDFDocumentController,
+              let syncTeX = pdf.features.lazy.compactMap({ $0 as? SyncTeXFeature }).first else {
+            completion?([])
+            return
+        }
+        // A window that was just created lays itself out on its first
+        // resize; searching before that would be undone by it.
+        whenLaidOut(pdf, attempts: 40) {
+            syncTeX.forwardSearch(source: request.source ?? defaultSource(for: request.pdf), line: line,
+                                  column: request.column, completion: completion)
+        }
+    }
+
+    /// No `src`: the `.tex` file named like the PDF.
+    private static func defaultSource(for pdf: URL) -> String {
+        pdf.deletingPathExtension().appendingPathExtension("tex").path
+    }
+
+    private static func whenLaidOut(_ pdf: PDFDocumentController, attempts: Int,
+                                    _ body: @escaping @MainActor () -> Void) {
+        let view = pdf.pdfView
+        if view.window?.isVisible == true, view.bounds.width > 1, pdf.documentView != nil || attempts <= 0 {
+            DispatchQueue.main.async { MainActor.assumeIsolated { body() } }
+            return
+        }
+        guard attempts > 0 else { return body() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.025) {
+            MainActor.assumeIsolated { whenLaidOut(pdf, attempts: attempts - 1, body) }
         }
     }
 }

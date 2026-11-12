@@ -69,6 +69,8 @@ final class PDFDocumentController: NSObject, DocumentController {
 
     /// Editing features, each living in its own directory.
     private(set) lazy var features: [PDFFeature] = [
+        // SyncTeX first so Cmd-click inverse search wins over markup selection.
+        SyncTeXFeature(controller: self),
         MarkupFeature(controller: self), PagesFeature(controller: self), FormsFeature(controller: self),
         OCRFeature(controller: self),
     ]
