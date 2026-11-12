@@ -89,8 +89,8 @@ final class SyncTeXIndex: @unchecked Sendable {
     /// returned are on the page of the best match.
     func boxes(sourcePath: String, line: Int, column: Int, pageHint: Int) -> [SyncTeXBox] {
         guard let name = recordedName(matching: sourcePath) else { return [] }
-        let count = synctex_display_query(scanner, name, Int32(line), Int32(max(column, 0)),
-                                          Int32(pageHint + 1))
+        let count = synctex_display_query(scanner, name, Int32(clamping: line), Int32(clamping: max(column, 0)),
+                                          Int32(clamping: pageHint + 1))
         guard count > 0 else { return [] }
         var result: [SyncTeXBox] = []
         while let node = synctex_scanner_next_result(scanner) {

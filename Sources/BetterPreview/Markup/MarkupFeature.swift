@@ -56,6 +56,9 @@ final class MarkupFeature: PDFFeature {
         case .toolArrow: toggleTool(.arrow)
         case .toolInk: toggleTool(.ink)
         case .annotationDelete:
+            // Nothing selected here: let Forms delete a selected signature
+            // (the window reports "No annotation selected" if nobody does).
+            guard selected != nil else { return false }
             deleteSelected()
         case .toggleInspector: toggleInspector()
         case .abort:
