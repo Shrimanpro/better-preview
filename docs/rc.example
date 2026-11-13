@@ -1,0 +1,290 @@
+# Better Preview rc  (copy to ~/.config/better-preview/rc)
+#
+# Everything below is the built-in default, commented out. Uncomment a line
+# and change it to override; lines you leave commented keep following the
+# defaults of future versions.
+#
+# Syntax
+#   # comment                         whole line, or after whitespace at the end of a line
+#   set <option> <value>              value may be "quoted" (needed for empty strings)
+#   map [mode] <keys> <action> [arg]  mode: normal (default), presentation, insert, command
+#   unmap [mode] <keys>               remove a binding (default or earlier map)
+#   include <path>                    read another rc file; relative to this file, ~ allowed
+#   theme-define <name> <dark|light> [from <theme>] ... theme-end
+#
+# Keys use vim notation: j  gg  ZZ  <C-d>  <S-Space>  <Space>o  <Esc>  <Tab>
+# <F5>  <Up>  <PageDown>  <lt> (a literal <).  Later lines win over earlier ones.
+# Booleans: true/false, yes/no, on/off, 1/0.
+#
+# Loading: built-in defaults first, then ~/.config/better-preview/rc (or the
+# file named by the BP_RC environment variable). Saving the file reloads it
+# live; `:source` with no argument reloads it by hand, `:source <file>` applies
+# another file. `include` may nest 8 levels deep. Errors are shown in the
+# status bar (first error, plus a count) and logged to the system log; the
+# rest of the file still loads.
+# Options can also be changed at runtime: `:set zoom-step 1.2`,
+# `:map J page-next`, `:unmap J` (runtime changes last until the rc reloads).
+
+# ======================================================================
+# Scrolling
+# ======================================================================
+# points scrolled by j / k
+# set scroll-step 80
+# points scrolled by h / l
+# set scroll-hstep 80
+# animate scrolling
+# set smooth-scroll true
+# seconds for a smooth-scroll animation (0 to 10)
+# set scroll-duration 0.16
+# fraction of the viewport kept visible when paging (0 to 1)
+# set scroll-page-overlap 0.1
+
+# ======================================================================
+# Zoom and layout
+# ======================================================================
+# multiplier per zoom-in / zoom-out (1 to 10)
+# set zoom-step 1.1
+# minimum zoom factor (1 = 100%)
+# set zoom-min 0.1
+# maximum zoom factor
+# set zoom-max 10
+# initial fit when a document opens: width, page or none
+# set default-fit width
+# continuous scrolling instead of one page at a time
+# set continuous true
+# two pages side by side
+# set dual-page false
+# dual-page mode starts with a lone cover page (book layout)
+# set dual-page-book true
+# gap between pages, in points
+# set page-padding 8
+
+# ======================================================================
+# Recolor and trim
+# ======================================================================
+# recolor pages with the theme (dark mode for documents)
+# set recolor false
+# recolor but keep image/text hues (lightness only)
+# set recolor-keephue false
+# crop white margins
+# set trim-margins false
+# points of margin kept when trimming
+# set trim-padding 6
+
+# ======================================================================
+# Themes
+# ======================================================================
+# theme name, or "auto" to follow the system appearance
+# set theme auto
+# theme used by "auto" in light appearance
+# set theme-light catppuccin-latte
+# theme used by "auto" in dark appearance
+# set theme-dark catppuccin-mocha
+
+# ======================================================================
+# Window
+# ======================================================================
+# show the status bar
+# set statusbar true
+# show the toolbar
+# set toolbar false
+# show the sidebar (thumbnails, outline)
+# set sidebar false
+# sidebar width in points
+# set sidebar-width 180
+# UI font family for status/command bar ("" = system monospaced)
+# set font ""
+# UI font size in points
+# set font-size 12
+
+# ======================================================================
+# Keys and search
+# ======================================================================
+# milliseconds to wait for the next key of a multi-key map
+# set key-timeout 700
+# search while typing
+# set incremental-search true
+# wrap around at the document ends
+# set search-wrap true
+# case-insensitive unless the query has capitals
+# set search-smartcase true
+
+# ======================================================================
+# Files
+# ======================================================================
+# reload when the file changes on disk
+# set auto-reload true
+# enable SyncTeX (Cmd-click inverse search, forward search)
+# set synctex true
+# inverse-search command; %{input} %{line} %{column}
+# set synctex-editor-command ""
+# comma-separated Vision language codes, e.g. "en-US,de-DE" ("" = automatic)
+# set ocr-languages ""
+# PDFKit's built-in automatic analysis of every visible page (form and table
+# detection, OCR of scanned pages). Costs a lot of CPU and memory while
+# scrolling; Better Preview has its own :ocr and form handling.
+# set pdfkit-analysis false
+
+# ======================================================================
+# Normal mode
+# ======================================================================
+# Keys with a count work like vim: 5j, 12G, 3J. goto-first/goto-last with a count go to that page.
+#
+# Scrolling and navigation
+# map j scroll-down
+# map k scroll-up
+# map h scroll-left    # previous page when nothing to scroll sideways
+# map l scroll-right   # next page when nothing to scroll sideways
+# map <Down> scroll-down
+# map <Up> scroll-up
+# map <Left> scroll-left
+# map <Right> scroll-right
+# map <C-e> scroll-down
+# map <C-y> scroll-up
+# map <C-d> scroll-half-down
+# map <C-u> scroll-half-up
+# map <C-f> scroll-page-down
+# map <C-b> scroll-page-up
+# map <Space> scroll-page-down
+# map <S-Space> scroll-page-up
+# map <PageDown> scroll-page-down
+# map <PageUp> scroll-page-up
+# map J page-next
+# map K page-previous
+# map gg goto-first
+# map G goto-last
+# map <Home> goto-first
+# map <End> goto-last
+#
+# Zoom and layout
+# map + zoom-in
+# map - zoom-out
+# map = zoom-reset
+# map zi zoom-in
+# map zo zoom-out
+# map z0 zoom-reset
+# map a fit-page
+# map s fit-width
+# map r rotate-cw
+# map d toggle-dual-page
+# map c toggle-continuous
+# map <C-r> toggle-recolor
+# map t toggle-trim
+#
+# Search
+# map / search-forward
+# map ? search-backward
+# map n search-next
+# map N search-previous
+#
+# Marks and jump list
+# map m mark-set
+# map ' mark-jump
+# map ` mark-jump
+# map <C-o> jump-back
+# map <C-i> jump-forward
+#
+# Window
+# map <Tab> toggle-sidebar
+# map T toggle-toolbar
+# map <C-n> toggle-statusbar
+# map <F11> toggle-fullscreen
+# map <F5> toggle-presentation
+# map i toggle-inspector
+#
+# Command line, files, quitting
+# map : enter-command
+# map <Esc> abort
+# map o enter-command "open "
+# map <Space>o open-palette
+# map <C-p> open-palette
+# map R reload
+# map q close
+# map ZZ close
+# map ZQ quit
+#
+# Markup
+# map gh annotate-highlight
+# map gu annotate-underline
+# map gs annotate-strikethrough
+# map x annotation-delete
+
+# ======================================================================
+# Presentation mode
+# ======================================================================
+# Presentation mode (F5): fullscreen, one page at a time. Own keymap: `map [presentation] ...`.
+# map [presentation] j page-next
+# map [presentation] k page-previous
+# map [presentation] l page-next
+# map [presentation] h page-previous
+# map [presentation] <Space> page-next
+# map [presentation] <S-Space> page-previous
+# map [presentation] <Right> page-next
+# map [presentation] <Left> page-previous
+# map [presentation] <Down> page-next
+# map [presentation] <Up> page-previous
+# map [presentation] <PageDown> page-next
+# map [presentation] <PageUp> page-previous
+# map [presentation] gg goto-first
+# map [presentation] G goto-last
+# map [presentation] <C-r> toggle-recolor
+# map [presentation] <Esc> toggle-presentation
+# map [presentation] q toggle-presentation
+# map [presentation] <F5> toggle-presentation
+
+# ======================================================================
+# Themes
+# ======================================================================
+# Built in (dark/light): catppuccin-latte (light), catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha, gruvbox-dark, gruvbox-light (light), nord, tokyo-night, tokyo-night-day (light), dracula, solarized-dark, solarized-light (light), rose-pine, rose-pine-moon, rose-pine-dawn (light)
+# Use one with `set theme <name>` or at runtime `:theme <name>`.
+# With `set theme auto`, theme-light / theme-dark follow the system appearance.
+#
+# Individual colors can be overridden on top of any theme with `set <key> <#rgb|#rrggbb|#rrggbbaa>`.
+# Keys: default-bg default-fg statusbar-bg statusbar-fg inputbar-bg inputbar-fg
+#       notification-bg notification-fg notification-error-bg notification-error-fg
+#       completion-bg completion-fg completion-highlight-bg completion-highlight-fg
+#       sidebar-bg sidebar-fg highlight-color highlight-active-color accent
+#       recolor-lightcolor recolor-darkcolor
+
+# ======================================================================
+# Examples (uncomment to use)
+# ======================================================================
+
+# -- Faster, snappier scrolling
+# set scroll-step 120
+# set scroll-duration 0.1
+
+# -- Always dark, documents recolored
+# set theme catppuccin-mocha
+# set recolor true
+
+# -- A custom theme, based on a built-in one (omit `from ...` to start from neutral defaults)
+# theme-define my-night dark from nord
+#   set accent #ff79c6
+#   set default-bg #101018
+# theme-end
+# set theme my-night
+
+# -- Tweak one color of the current theme
+# set highlight-color #f9e2af80
+
+# -- Editor for SyncTeX inverse search (Cmd-click on the PDF)
+# set synctex-editor-command "code -g %{input}:%{line}"
+# set synctex-editor-command "nvim --server /tmp/nvim.sock --remote-send '<C-\\><C-n>:e %{input}<CR>:%{line}<CR>'"
+# set synctex-editor-command "subl %{input}:%{line}:%{column}"
+
+# -- Rebind and add keys
+# map <C-j> page-next
+# map <C-k> page-previous
+# map H jump-back
+# map L jump-forward
+# map <Space>t toggle-sidebar
+# map <Space>w enter-command "w "
+# map <Space>g enter-command "goto-page "
+# map <Space>s enter-command "synctex-forward "
+# map [presentation] n page-next
+# unmap ZQ
+
+# -- Pull in another file (relative to this one)
+# include ~/.config/better-preview/local.rc
+
